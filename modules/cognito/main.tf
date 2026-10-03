@@ -1,7 +1,16 @@
-variable "name" { type = string }
+variable "name" {
+  description = "Base name for the Cognito User Pool and Client."
+  type        = string
+}
+
+variable "generate_client_secret" {
+  description = "Whether to generate a client secret for the user pool client."
+  type        = bool
+  default     = false
+}
 
 resource "aws_cognito_user_pool" "this" {
-  name = "${var.name}-customer-pool"
+  name = "${var.name}-pool"
 
   username_attributes      = ["email"]
   auto_verified_attributes = ["email"]
@@ -21,10 +30,10 @@ resource "aws_cognito_user_pool" "this" {
 }
 
 resource "aws_cognito_user_pool_client" "this" {
-  name         = "${var.name}-customer-client"
+  name         = "${var.name}-client"
   user_pool_id = aws_cognito_user_pool.this.id
 
-  generate_secret = false
+  generate_secret = var.generate_client_secret
 
   explicit_auth_flows = [
     "ALLOW_USER_SRP_AUTH",

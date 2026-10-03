@@ -5,6 +5,11 @@ variable "alb_listener_arn" { type = string }
 variable "cognito_issuer" { type = string }
 variable "cognito_client_id" { type = string }
 variable "route_prefixes" { type = map(string) }
+variable "cors_allow_origins" {
+  type        = list(string)
+  description = "Origins allowed to make cross-origin requests to API Gateway"
+  default     = ["*"]
+}
 
 resource "aws_apigatewayv2_vpc_link" "this" {
   name               = "${var.name}-vpc-link"
@@ -15,6 +20,13 @@ resource "aws_apigatewayv2_vpc_link" "this" {
 resource "aws_apigatewayv2_api" "this" {
   name          = "${var.name}-http-api"
   protocol_type = "HTTP"
+
+  cors_configuration {
+    allow_origins = var.cors_allow_origins
+    allow_methods = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"]
+    allow_headers = ["authorization", "content-type", "x-amz-date", "x-api-key", "x-amz-security-token"]
+    max_age       = 3600
+  }
 }
 
 resource "aws_apigatewayv2_authorizer" "cognito" {

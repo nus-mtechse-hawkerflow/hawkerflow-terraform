@@ -58,7 +58,7 @@ resource "aws_db_instance" "this" {
 
   lifecycle {
     prevent_destroy = false
-    ignore_changes = [final_snapshot_identifier]
+    ignore_changes  = [final_snapshot_identifier]
   }
 }
 

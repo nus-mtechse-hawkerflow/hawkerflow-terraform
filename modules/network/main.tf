@@ -8,7 +8,7 @@ resource "aws_vpc" "this" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
-  tags = { Name = "${var.name}-vpc" }
+  tags                 = { Name = "${var.name}-vpc" }
 }
 
 resource "aws_internet_gateway" "this" {
@@ -23,7 +23,7 @@ resource "aws_subnet" "public" {
   availability_zone       = each.key
   cidr_block              = cidrsubnet(var.vpc_cidr, 4, each.value)
   map_public_ip_on_launch = true
-  tags = { Name = "${var.name}-public-${each.key}" }
+  tags                    = { Name = "${var.name}-public-${each.key}" }
 }
 
 resource "aws_subnet" "app" {
@@ -32,7 +32,7 @@ resource "aws_subnet" "app" {
   vpc_id            = aws_vpc.this.id
   availability_zone = each.key
   cidr_block        = cidrsubnet(var.vpc_cidr, 4, each.value + 4)
-  tags = { Name = "${var.name}-app-${each.key}" }
+  tags              = { Name = "${var.name}-app-${each.key}" }
 }
 
 resource "aws_subnet" "db" {
@@ -41,7 +41,7 @@ resource "aws_subnet" "db" {
   vpc_id            = aws_vpc.this.id
   availability_zone = each.key
   cidr_block        = cidrsubnet(var.vpc_cidr, 4, each.value + 8)
-  tags = { Name = "${var.name}-db-${each.key}" }
+  tags              = { Name = "${var.name}-db-${each.key}" }
 }
 
 resource "aws_route_table" "public" {
@@ -185,7 +185,7 @@ resource "aws_vpc_endpoint" "s3" {
   service_name      = "com.amazonaws.${var.aws_region}.s3"
   vpc_endpoint_type = "Gateway"
   route_table_ids   = [aws_route_table.app.id]
-  tags = { Name = "${var.name}-s3-endpoint" }
+  tags              = { Name = "${var.name}-s3-endpoint" }
 }
 data "aws_region" "current" {}
 # -------------------------------------------------------------
@@ -201,14 +201,14 @@ locals {
 }
 
 resource "aws_vpc_endpoint" "interfaces" {
-  for_each = local.interface_endpoints
+  for_each            = local.interface_endpoints
   vpc_id              = aws_vpc.this.id
   service_name        = each.value
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
-  subnet_ids         = values(aws_subnet.app)[*].id
-  security_group_ids = [aws_security_group.vpc_endpoints.id]
-  tags = { Name = "${var.name}-${each.key}-endpoint" }
+  subnet_ids          = values(aws_subnet.app)[*].id
+  security_group_ids  = [aws_security_group.vpc_endpoints.id]
+  tags                = { Name = "${var.name}-${each.key}-endpoint" }
 }
 
 output "vpc_id" { value = aws_vpc.this.id }

@@ -5,24 +5,27 @@ This project creates a reusable AWS foundation for four (or more) HTTP microserv
 ## Architecture
 
 ```text
-Internet/mobile/web client
-        |
-        | Cognito JWT
-        v
-API Gateway HTTP API
-        |
-        | VPC Link
-        v
-Internal Application Load Balancer
-        |
-        +-- /users/*    -> user ECS service
-        +-- /orders/*   -> order ECS service
-        +-- /hawkers/*  -> hawker ECS service
-        +-- /payments/* -> payment ECS service
-                              |
-                         ECS / Fargate
-                              |
-                         RDS PostgreSQL
+       [ User Browser ]
+         │          │
+         │ (HTTPS)  │ (REST with Cognito JWT)
+         ▼          ▼
+┌──────────────────┐    ┌───────────────────────────────────────────────┐
+│ CloudFront (CDN) │    │ API Gateway (HTTP API with CORS)              │
+│ (2 Distributions)│    └──────────────────────┬────────────────────────┘
+└────────┬─────────┘                           │
+         │ (OAC)                               │ VPC Link
+         ▼                                     ▼
+┌──────────────────┐            ┌─────────────────────────────┐
+│    S3 Buckets    │            │ Internal ALB                │
+│ (Private / SPAs) │            └──────────────┬──────────────┘
+│  • Customer Web  │                           │ Path-based
+│  • Hawker Web    │            ┌──────────────┼──────────────┐
+└──────────────────┘            ▼              ▼              ▼
+                          /order/*        /hawker/*      /customer/* ...
+                          (ECS Task)      (ECS Task)     (ECS Task)
+                                └──────────────┬──────────────┘
+                                               ▼
+                                         RDS PostgreSQL
 ```
 
 ECS tasks, the ALB, and RDS are not directly public. API Gateway is the public application entry point.
@@ -234,7 +237,42 @@ This starter provisions one PostgreSQL RDS instance because that is what the req
 
 That is not the target production security model. A better next step is to give each microservice its own PostgreSQL database/schema and a restricted database user, with separate secrets. This limits blast radius and makes service ownership clearer.
 
-## 12. Files/modules
+## 12. Frontend SPA Hosting (Angular)
+
+Two Angular applications (`customer` and `hawker`) are hosted using **Amazon S3 + CloudFront Origin Access Control (OAC)**:
+
+- **Cost:** Practically $0/month (CloudFront free tier includes 1 TB transfer and 10M requests; S3 storage for compiled static assets is <$0.01/month).
+- **Security:** S3 buckets are completely private; public access is blocked, and access is permitted only via CloudFront OAC.
+- **SPA Client-side Routing:** HTTP 403 & 404 error responses are rewritten to `/index.html` with status 200, enabling Angular HTML5 routing (`PathLocationStrategy`).
+- **Backend Access & CORS:** API Gateway has built-in CORS configuration enabled so both Angular web apps can make requests to `api_url` seamlessly with Cognito JWT tokens.
+
+### Deploying an Angular Application
+
+1. In your Angular project, configure your environment with the outputs from Terraform:
+   ```typescript
+   export const environment = {
+     production: true,
+     apiUrl: '<terraform-output-api_url>',
+     cognito: {
+       userPoolId: '<terraform-output-cognito_user_pool_id>',
+       clientId: '<terraform-output-cognito_client_id>'
+     }
+   };
+   ```
+
+2. Build your Angular app for production:
+   ```bash
+   ng build --configuration production
+   ```
+
+3. Deploy using the provided helper script:
+   ```bash
+   # Usage: ./scripts/deploy-frontend.sh <customer|hawker> <path-to-dist-browser-dir>
+   ./scripts/deploy-frontend.sh customer ../path-to-customer-app/dist/customer/browser
+   ./scripts/deploy-frontend.sh hawker ../path-to-hawker-app/dist/hawker/browser
+   ```
+
+## 13. Files/modules
 
 ```text
 .
@@ -245,6 +283,9 @@ That is not the target production security model. A better next step is to give 
 ├── outputs.tf
 ├── terraform.tfvars.example
 ├── backend.tf.example
+├── scripts
+│   ├── deploy-frontend.sh
+│   └── toggle-protection.sh
 └── modules
     ├── network
     ├── ecr
@@ -253,5 +294,7 @@ That is not the target production security model. A better next step is to give 
     ├── cognito
     ├── alb
     ├── ecs-service
-    └── api-gateway
+    ├── api-gateway
+    └── spa-hosting
 ```
+

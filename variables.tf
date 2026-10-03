@@ -122,3 +122,38 @@ variable "db_skip_final_snapshot" {
   type        = bool
   default     = true
 }
+
+variable "frontend_apps" {
+  description = "Map of frontend SPAs (e.g. Angular web applications) to host on S3 + CloudFront."
+  type = map(object({
+    comment     = optional(string)
+    price_class = optional(string, "PriceClass_100")
+  }))
+  default = {
+    customer = {
+      comment     = "Customer portal Angular web application"
+      price_class = "PriceClass_100"
+    }
+    hawker = {
+      comment     = "Hawker / Merchant portal Angular web application"
+      price_class = "PriceClass_100"
+    }
+  }
+}
+
+variable "cors_allow_origins" {
+  description = "Allowed origins for API Gateway CORS. Defaults to ['*'] for dev, can be set to specific CloudFront or local URLs."
+  type        = list(string)
+  default     = ["*"]
+}
+
+variable "cognito_pools" {
+  description = "Map of Cognito user pools to create."
+  type = map(object({
+    generate_client_secret = optional(bool, false)
+  }))
+  default = {
+    customer = {}
+    hawker   = {}
+  }
+}

@@ -42,3 +42,26 @@ services = {
     image_tag      = "latest"
   }
 }
+
+# Frontend Angular Applications hosted on S3 + CloudFront
+frontend_apps = {
+  customer = {
+    comment     = "Customer portal Angular web application"
+    price_class = "PriceClass_100"
+  }
+  hawker = {
+    comment     = "Hawker / Merchant portal Angular web application"
+    price_class = "PriceClass_100"
+  }
+}
+
+# Cognito User Pools
+cognito_pools = {
+  customer = {}
+  hawker   = {}
+}
+
+# Allowed origins for API Gateway CORS
+cors_allow_origins = ["*"]
+
+

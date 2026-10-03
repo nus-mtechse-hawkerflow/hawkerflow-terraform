@@ -20,7 +20,7 @@ locals {
 }
 
 module "network" {
-  source = "./modules/network"
+  source             = "./modules/network"
   name               = local.name
   vpc_cidr           = var.vpc_cidr
   availability_zones = local.azs
@@ -71,9 +71,17 @@ resource "aws_iam_role_policy" "ecs_read_db_secret" {
   })
 }
 
+moved {
+  from = module.cognito
+  to   = module.cognito["customer"]
+}
+
 module "cognito" {
-  source = "./modules/cognito"
-  name   = local.name
+  for_each = var.cognito_pools
+  source   = "./modules/cognito"
+
+  name                   = "${local.name}-${each.key}"
+  generate_client_secret = coalesce(each.value.generate_client_secret, false)
 }
 
 module "alb" {
@@ -124,11 +132,23 @@ module "ecs_service" {
 module "api_gateway" {
   source = "./modules/api-gateway"
 
-  name                  = local.name
-  private_subnet_ids    = module.network.private_app_subnet_ids
-  vpc_link_sg_id        = module.network.vpc_link_security_group_id
-  alb_listener_arn      = module.alb.listener_arn
-  cognito_issuer        = module.cognito.issuer
-  cognito_client_id     = module.cognito.client_id
-  route_prefixes        = { for k, v in var.services : k => v.route_prefix }
+  name               = local.name
+  private_subnet_ids = module.network.private_app_subnet_ids
+  vpc_link_sg_id     = module.network.vpc_link_security_group_id
+  alb_listener_arn   = module.alb.listener_arn
+  cognito_issuer     = module.cognito["customer"].issuer
+  cognito_client_id  = module.cognito["customer"].client_id
+  route_prefixes     = { for k, v in var.services : k => v.route_prefix }
+  cors_allow_origins = var.cors_allow_origins
 }
+
+module "spa_hosting" {
+  for_each = var.frontend_apps
+  source   = "./modules/spa-hosting"
+
+  name        = "${local.name}-${each.key}"
+  bucket_name = "${local.name}-${each.key}-web-${data.aws_caller_identity.current.account_id}"
+  comment     = coalesce(each.value.comment, "${each.key} Angular web app")
+  price_class = each.value.price_class
+}
+
