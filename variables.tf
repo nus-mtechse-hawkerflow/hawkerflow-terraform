@@ -36,7 +36,7 @@ variable "services" {
 
   default = {
     order = {
-      container_port = 8000
+      container_port = 8080
       cpu            = 256
       memory         = 512
       desired_count  = 1
@@ -46,7 +46,7 @@ variable "services" {
       priority       = 10
     }
     hawker = {
-      container_port = 8000
+      container_port = 8080
       cpu            = 256
       memory         = 512
       desired_count  = 1
@@ -56,7 +56,7 @@ variable "services" {
       priority       = 20
     }
     customer = {
-      container_port = 8000
+      container_port = 8080
       cpu            = 256
       memory         = 512
       desired_count  = 1
@@ -66,7 +66,7 @@ variable "services" {
       priority       = 30
     }
     analytics = {
-      container_port = 8000
+      container_port = 8080
       cpu            = 256
       memory         = 512
       desired_count  = 1
@@ -109,4 +109,16 @@ variable "enable_container_insights" {
   description = "Enable CloudWatch Container Insights for the ECS cluster"
   type        = bool
   default     = true # Off for dev, toggle on for prod
+}
+
+variable "db_deletion_protection" {
+  description = "Whether to enable deletion protection on the RDS instance. Set false for disposable environments."
+  type        = bool
+  default     = false
+}
+
+variable "db_skip_final_snapshot" {
+  description = "Whether to skip final snapshot when destroying RDS. Set true for disposable environments."
+  type        = bool
+  default     = true
 }

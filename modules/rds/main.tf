@@ -6,6 +6,16 @@ variable "db_name" { type = string }
 variable "db_username" { type = string }
 variable "instance_class" { type = string }
 variable "allocated_storage" { type = number }
+variable "deletion_protection" {
+  type        = bool
+  default     = false
+  description = "Whether to enable deletion protection on the database"
+}
+variable "skip_final_snapshot" {
+  type        = bool
+  default     = true
+  description = "Whether to skip final snapshot when destroying the database"
+}
 
 resource "aws_security_group" "db" {
   name        = "${var.name}-db-sg"
@@ -42,8 +52,8 @@ resource "aws_db_instance" "this" {
   publicly_accessible         = false
   multi_az                    = false
   backup_retention_period     = 7
-  deletion_protection         = true
-  skip_final_snapshot         = false
+  deletion_protection         = var.deletion_protection
+  skip_final_snapshot         = var.skip_final_snapshot
   apply_immediately           = false
 
   lifecycle {

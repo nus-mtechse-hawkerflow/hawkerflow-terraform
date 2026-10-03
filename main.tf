@@ -53,6 +53,8 @@ module "database" {
   db_username         = var.db_username
   instance_class      = var.db_instance_class
   allocated_storage   = var.db_allocated_storage
+  deletion_protection = var.db_deletion_protection
+  skip_final_snapshot = var.db_skip_final_snapshot
 }
 
 resource "aws_iam_role_policy" "ecs_read_db_secret" {
