@@ -61,7 +61,9 @@ cognito_pools = {
   hawker   = {}
 }
 
-# Allowed origins for API Gateway CORS
+# Allowed origins and headers for API Gateway CORS
 cors_allow_origins = ["*"]
+cors_allow_headers = ["*"]
+
 
 

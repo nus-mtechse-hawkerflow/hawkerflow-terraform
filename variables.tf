@@ -147,6 +147,13 @@ variable "cors_allow_origins" {
   default     = ["*"]
 }
 
+variable "cors_allow_headers" {
+  description = "Allowed headers for API Gateway CORS. Defaults to ['*']."
+  type        = list(string)
+  default     = ["*"]
+}
+
+
 variable "cognito_pools" {
   description = "Map of Cognito user pools to create."
   type = map(object({

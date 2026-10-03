@@ -76,6 +76,10 @@ resource "aws_cloudfront_distribution" "this" {
   viewer_certificate {
     cloudfront_default_certificate = true
   }
+
+  lifecycle {
+    ignore_changes = [web_acl_id, price_class]
+  }
 }
 
 resource "aws_s3_bucket_policy" "this" {

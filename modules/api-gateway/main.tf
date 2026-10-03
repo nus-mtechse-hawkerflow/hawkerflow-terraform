@@ -10,6 +10,11 @@ variable "cors_allow_origins" {
   description = "Origins allowed to make cross-origin requests to API Gateway"
   default     = ["*"]
 }
+variable "cors_allow_headers" {
+  type        = list(string)
+  description = "Allowed headers for API Gateway CORS"
+  default     = ["*"]
+}
 
 resource "aws_apigatewayv2_vpc_link" "this" {
   name               = "${var.name}-vpc-link"
@@ -24,7 +29,7 @@ resource "aws_apigatewayv2_api" "this" {
   cors_configuration {
     allow_origins = var.cors_allow_origins
     allow_methods = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"]
-    allow_headers = ["authorization", "content-type", "x-amz-date", "x-api-key", "x-amz-security-token"]
+    allow_headers = var.cors_allow_headers
     max_age       = 3600
   }
 }

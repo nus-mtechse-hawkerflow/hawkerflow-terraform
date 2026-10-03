@@ -140,6 +140,7 @@ module "api_gateway" {
   cognito_client_id  = module.cognito["customer"].client_id
   route_prefixes     = { for k, v in var.services : k => v.route_prefix }
   cors_allow_origins = var.cors_allow_origins
+  cors_allow_headers = var.cors_allow_headers
 }
 
 module "spa_hosting" {
