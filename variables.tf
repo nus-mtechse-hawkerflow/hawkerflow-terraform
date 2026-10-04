@@ -79,6 +79,12 @@ variable "services" {
   }
 }
 
+variable "paused" {
+  description = "Park the deployment to save cost: no running tasks and no interface VPC endpoints. Data, accounts and addresses are kept. Use scripts/pause.sh and scripts/resume.sh, which also stop and start the database and bastion."
+  type        = bool
+  default     = false
+}
+
 variable "order_pending_expiry_minutes" {
   description = "Minutes a stall has to accept an order before the order service cancels it."
   type        = number

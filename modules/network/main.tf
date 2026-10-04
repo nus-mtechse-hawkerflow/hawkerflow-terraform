@@ -3,6 +3,11 @@ variable "vpc_cidr" { type = string }
 variable "availability_zones" { type = list(string) }
 variable "enable_nat_gateway" { type = bool }
 variable "aws_region" { type = string }
+variable "enable_interface_endpoints" {
+  type        = bool
+  default     = true
+  description = "Interface endpoints bill by the hour. Without them and without NAT, tasks cannot start."
+}
 
 resource "aws_vpc" "this" {
   cidr_block           = var.vpc_cidr
@@ -203,7 +208,7 @@ locals {
 }
 
 resource "aws_vpc_endpoint" "interfaces" {
-  for_each            = local.interface_endpoints
+  for_each            = var.enable_interface_endpoints ? local.interface_endpoints : {}
   vpc_id              = aws_vpc.this.id
   service_name        = each.value
   vpc_endpoint_type   = "Interface"

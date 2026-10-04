@@ -26,6 +26,9 @@ module "network" {
   availability_zones = local.azs
   enable_nat_gateway = var.enable_nat_gateway
   aws_region         = var.aws_region
+
+  # A paused deployment runs no tasks, so it needs no interface endpoints
+  enable_interface_endpoints = !var.paused
 }
 
 module "ecr" {
@@ -220,7 +223,7 @@ module "ecs_service" {
   container_port          = each.value.container_port
   cpu                     = each.value.cpu
   memory                  = each.value.memory
-  desired_count           = each.value.desired_count
+  desired_count           = var.paused ? 0 : each.value.desired_count
   aws_region              = var.aws_region
   db_host                 = module.database.address
   db_port                 = module.database.port

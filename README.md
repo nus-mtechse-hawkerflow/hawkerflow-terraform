@@ -180,6 +180,36 @@ ECS SG      -> VPC endpoint SG :443
 
 The database is `publicly_accessible = false`.
 
+## Pausing and resuming
+
+To stop most of the cost without losing anything, pause the deployment:
+
+```bash
+./scripts/pause.sh     # services to zero, interface endpoints removed, database and bastion stopped
+./scripts/resume.sh    # everything back; waits until all four services answer
+```
+
+Both run a `terraform apply` and ask for confirmation. Anyone with the AWS
+credentials and this repository can resume; it takes about 10 minutes, most
+of it the database starting.
+
+| | Running | Paused | Destroyed |
+|---|---|---|---|
+| Cost per day | about US$7 | about US$0.70 | about US$0 |
+| Stalls, orders, accounts | kept | kept | lost |
+| Site and API addresses | same | same | change on rebuild |
+| Time to bring back | - | about 10 minutes | about 30 minutes |
+
+While paused, the sites still load but ordering and sign-up do not work. What
+still bills is the load balancer and the database's disk.
+
+Two cautions:
+
+- **Do not run a plain `terraform apply` while paused.** It would restart the
+  services with the database still stopped. Use `resume.sh`.
+- **AWS restarts a stopped database after 7 days.** For a longer pause, run
+  `pause.sh` again each week, or destroy the deployment.
+
 ## Rebuilding from nothing
 
 Only when the deployment does not exist: after `terraform destroy`, or in a
@@ -272,6 +302,8 @@ production, consider:
 │   ├── release-service.sh
 │   ├── release-frontend.sh
 │   ├── deploy-frontend.sh
+│   ├── pause.sh
+│   ├── resume.sh
 │   └── toggle-protection.sh
 └── modules
     ├── network
