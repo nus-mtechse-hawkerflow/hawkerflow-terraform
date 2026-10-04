@@ -70,10 +70,11 @@ variable "services" {
       cpu            = 256
       memory         = 512
       desired_count  = 1
-      route_prefix   = "/analytics"
-      health_path    = "/health"
-      image_tag      = "latest"
-      priority       = 40
+      # Not "/analytics": ad and tracker blockers refuse requests to that path
+      route_prefix = "/insights"
+      health_path  = "/health"
+      image_tag    = "latest"
+      priority     = 40
     }
   }
 }
