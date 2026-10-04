@@ -26,8 +26,20 @@ REGION=$(echo "$API_URL" | sed -E 's#.*execute-api\.([a-z0-9-]+)\.amazonaws\.com
 NAME="${CLUSTER%-cluster}"
 DB_ID="$NAME-postgres"
 
-DB_STATUS=$(aws rds describe-db-instances --region "$REGION" --db-instance-identifier "$DB_ID" \
-  --query 'DBInstances[0].DBInstanceStatus' --output text)
+db_status() {
+  aws rds describe-db-instances --region "$REGION" --db-instance-identifier "$DB_ID" \
+    --query 'DBInstances[0].DBInstanceStatus' --output text
+}
+
+# A database that is still stopping cannot be started yet. Wait for it to
+# finish, or the wait further down would never see it become available.
+DB_STATUS=$(db_status)
+while [[ "$DB_STATUS" == "stopping" ]]; do
+  echo "Database $DB_ID is still stopping; waiting before starting it..."
+  sleep 20
+  DB_STATUS=$(db_status)
+done
+
 if [[ "$DB_STATUS" == "stopped" ]]; then
   echo "Starting database $DB_ID..."
   aws rds start-db-instance --region "$REGION" --db-instance-identifier "$DB_ID" \
