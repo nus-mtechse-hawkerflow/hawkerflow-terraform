@@ -72,3 +72,25 @@ output "frontend_distribution_ids" {
   }
 }
 
+output "bastion_instance_id" {
+  description = "EC2 Bastion instance ID."
+  value       = try(module.bastion[0].instance_id, null)
+}
+
+output "bastion_public_ip" {
+  description = "Public IP address of the EC2 Bastion host."
+  value       = try(module.bastion[0].public_ip, null)
+}
+
+output "bastion_ssh_private_key" {
+  description = "Auto-generated private key for SSH tunneling. Save using: terraform output -raw bastion_ssh_private_key > bastion.pem && chmod 400 bastion.pem"
+  value       = try(module.bastion[0].private_key_pem, null)
+  sensitive   = true
+}
+
+output "bastion_ssh_tunnel_command" {
+  description = "SSH port-forwarding command to tunnel RDS PostgreSQL port to localhost:5432."
+  value       = var.enable_bastion ? "ssh -i bastion.pem -N -L 5432:${module.database.address}:5432 ec2-user@${module.bastion[0].public_ip}" : null
+}
+
+

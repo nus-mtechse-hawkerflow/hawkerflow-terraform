@@ -164,3 +164,27 @@ variable "cognito_pools" {
     hawker   = {}
   }
 }
+
+variable "enable_bastion" {
+  description = "Whether to deploy an EC2 bastion host for SSH tunneling to RDS."
+  type        = bool
+  default     = true
+}
+
+variable "bastion_instance_type" {
+  description = "EC2 instance type for the bastion host. Defaults to t4g.nano for lowest cost."
+  type        = string
+  default     = "t4g.nano"
+}
+
+variable "bastion_allowed_cidr_blocks" {
+  description = "List of CIDR blocks permitted to SSH into the bastion host. Can be restricted to your specific IP (e.g. ['203.0.113.195/32'])."
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
+
+variable "bastion_public_key" {
+  description = "Optional existing SSH public key. If null, a 4096-bit RSA key pair is generated automatically."
+  type        = string
+  default     = null
+}

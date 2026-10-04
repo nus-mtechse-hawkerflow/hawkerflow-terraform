@@ -16,6 +16,11 @@ variable "skip_final_snapshot" {
   default     = true
   description = "Whether to skip final snapshot when destroying the database"
 }
+variable "additional_security_group_ids" {
+  type        = list(string)
+  default     = []
+  description = "Additional security group IDs allowed to access PostgreSQL (e.g. bastion host)"
+}
 
 resource "aws_security_group" "db" {
   name        = "${var.name}-db-sg"
@@ -26,7 +31,7 @@ resource "aws_security_group" "db" {
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
-    security_groups = [var.ecs_security_group]
+    security_groups = concat([var.ecs_security_group], var.additional_security_group_ids)
   }
 }
 
@@ -66,3 +71,4 @@ resource "aws_db_instance" "this" {
 output "address" { value = aws_db_instance.this.address }
 output "port" { value = aws_db_instance.this.port }
 output "master_secret_arn" { value = aws_db_instance.this.master_user_secret[0].secret_arn }
+output "security_group_id" { value = aws_security_group.db.id }

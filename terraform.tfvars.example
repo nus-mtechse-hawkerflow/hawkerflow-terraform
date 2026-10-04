@@ -65,5 +65,7 @@ cognito_pools = {
 cors_allow_origins = ["*"]
 cors_allow_headers = ["*"]
 
-
-
+# Bastion host for local DBeaver / database access (No NAT Gateway needed)
+enable_bastion              = true
+bastion_instance_type       = "t4g.nano"        # lowest cost (~$0.0053/hr)
+bastion_allowed_cidr_blocks = ["0.0.0.0/0"]     # restrict to your IP (e.g. ["203.0.113.195/32"]) for tighter security

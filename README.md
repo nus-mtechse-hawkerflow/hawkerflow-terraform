@@ -295,6 +295,62 @@ Two Angular applications (`customer` and `hawker`) are hosted using **Amazon S3 
     ├── alb
     ├── ecs-service
     ├── api-gateway
-    └── spa-hosting
+    ├── spa-hosting
+    └── bastion
 ```
+
+## 14. Connecting to RDS from local DBeaver (EC2 Bastion SSH Tunnel)
+
+The RDS PostgreSQL database is isolated in private database subnets with no public internet routing. To allow local tools like **DBeaver** or `psql` to connect securely without an expensive NAT Gateway ($32+/mo):
+
+- A lightweight EC2 Bastion host (`t4g.nano`, ~$0.0053/hr) is placed in the **public subnet** with an Internet Gateway route.
+- Security groups permit inbound SSH (port 22) to the Bastion host and allow the Bastion host to access PostgreSQL (port 5432) on the RDS instance.
+- **Cost optimization:** When not in use, you can stop the bastion instance (`aws ec2 stop-instances --instance-ids $(terraform output -raw bastion_instance_id)`). While stopped, you only pay for 8 GB gp3 storage (~$0.64/month).
+
+### Step 1: Save the auto-generated SSH key
+
+```bash
+terraform output -raw bastion_ssh_private_key > bastion.pem
+chmod 400 bastion.pem
+```
+
+### Step 2: Retrieve the database credentials
+
+```bash
+# Database endpoint
+terraform output database_endpoint
+
+# Master password from AWS Secrets Manager
+aws secretsmanager get-secret-value \
+  --secret-id $(terraform output -raw database_secret_arn) \
+  --query SecretString \
+  --output text
+```
+
+### Step 3: Configure DBeaver
+
+1. In DBeaver, click **New Database Connection** -> **PostgreSQL**.
+2. In the **Main** tab:
+   - **Host:** Enter your `database_endpoint` (from `terraform output database_endpoint`)
+   - **Port:** `5432`
+   - **Database:** `hawkerflow` (or `var.db_name`)
+   - **Authentication:** Database Native
+   - **Username:** `hawkerflow_admin` (or `var.db_username`)
+   - **Password:** Paste the password retrieved from Secrets Manager
+3. In the **SSH** tab:
+   - Check **Use SSH Tunnel**
+   - **Host/IP:** Enter your `bastion_public_ip` (from `terraform output bastion_public_ip`)
+   - **Port:** `22`
+   - **User Name:** `ec2-user`
+   - **Authentication Method:** `Public Key`
+   - **Private Key:** Select the `bastion.pem` file you saved in Step 1
+4. Click **Test Connection** -> **Finish**.
+
+*(Optional) Alternative CLI port forwarding:*
+```bash
+# Opens localhost:5432 forwarded to RDS
+$(terraform output -raw bastion_ssh_tunnel_command)
+```
+
+
 

@@ -42,19 +42,32 @@ module "iam" {
   services = keys(var.services)
 }
 
-module "database" {
-  source = "./modules/rds"
+module "bastion" {
+  count  = var.enable_bastion ? 1 : 0
+  source = "./modules/bastion"
 
   name                = local.name
   vpc_id              = module.network.vpc_id
-  private_db_subnets  = module.network.database_subnet_ids
-  ecs_security_group  = module.network.ecs_security_group_id
-  db_name             = var.db_name
-  db_username         = var.db_username
-  instance_class      = var.db_instance_class
-  allocated_storage   = var.db_allocated_storage
-  deletion_protection = var.db_deletion_protection
-  skip_final_snapshot = var.db_skip_final_snapshot
+  subnet_id           = module.network.public_subnet_ids[0]
+  instance_type       = var.bastion_instance_type
+  allowed_cidr_blocks = var.bastion_allowed_cidr_blocks
+  public_key          = var.bastion_public_key
+}
+
+module "database" {
+  source = "./modules/rds"
+
+  name                          = local.name
+  vpc_id                        = module.network.vpc_id
+  private_db_subnets            = module.network.database_subnet_ids
+  ecs_security_group            = module.network.ecs_security_group_id
+  additional_security_group_ids = var.enable_bastion ? [module.bastion[0].security_group_id] : []
+  db_name                       = var.db_name
+  db_username                   = var.db_username
+  instance_class                = var.db_instance_class
+  allocated_storage             = var.db_allocated_storage
+  deletion_protection           = var.db_deletion_protection
+  skip_final_snapshot           = var.db_skip_final_snapshot
 }
 
 resource "aws_iam_role_policy" "ecs_read_db_secret" {
