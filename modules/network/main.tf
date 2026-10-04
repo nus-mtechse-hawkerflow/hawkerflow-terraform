@@ -189,7 +189,7 @@ resource "aws_vpc_endpoint" "s3" {
 }
 data "aws_region" "current" {}
 # -------------------------------------------------------------
-# 3. Interface Endpoints (ECR, Logs, Secrets Manager)
+# 3. Interface Endpoints (ECR, Logs, Secrets Manager, SQS)
 # -------------------------------------------------------------
 locals {
   interface_endpoints = {
@@ -197,6 +197,7 @@ locals {
     ecr_dkr = "com.amazonaws.${var.aws_region}.ecr.dkr"
     logs    = "com.amazonaws.${var.aws_region}.logs"
     secrets = "com.amazonaws.${var.aws_region}.secretsmanager"
+    sqs     = "com.amazonaws.${var.aws_region}.sqs"
   }
 }
 

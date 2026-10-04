@@ -84,6 +84,52 @@ resource "aws_iam_role_policy" "ecs_read_db_secret" {
   })
 }
 
+# -------------------------------------------------------------
+# Order queue: diners' orders are queued here and created by the
+# order service's background worker.
+# -------------------------------------------------------------
+locals {
+  order_queue_service = "order"
+  has_order_service   = contains(keys(var.services), local.order_queue_service)
+}
+
+resource "aws_sqs_queue" "order_dlq" {
+  name                      = "${local.name}-order-queue-dlq"
+  message_retention_seconds = 1209600
+}
+
+resource "aws_sqs_queue" "order" {
+  name                       = "${local.name}-order-queue"
+  visibility_timeout_seconds = 60
+
+  # A message the worker fails five times is set aside instead of retried forever
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.order_dlq.arn
+    maxReceiveCount     = 5
+  })
+}
+
+resource "aws_iam_role_policy" "order_queue_access" {
+  count = local.has_order_service ? 1 : 0
+  name  = "${local.name}-order-queue-access"
+  role  = module.iam.task_role_names[local.order_queue_service]
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "sqs:SendMessage",
+        "sqs:ReceiveMessage",
+        "sqs:DeleteMessage",
+        "sqs:ChangeMessageVisibility",
+        "sqs:GetQueueAttributes"
+      ]
+      Resource = [aws_sqs_queue.order.arn]
+    }]
+  })
+}
+
 moved {
   from = module.cognito
   to   = module.cognito["customer"]
@@ -140,6 +186,16 @@ module "ecs_service" {
   db_name                 = var.db_name
   db_master_secret_arn    = module.database.master_secret_arn
   depends_on_listener_arn = module.alb.listener_arn
+
+  # The order service reads these over its config.yml, which ships with
+  # LocalStack values. Nothing subscribes to order events on AWS, so
+  # publishing them is switched off.
+  extra_environment = each.key == local.order_queue_service ? {
+    SQS__ENABLED     = "true"
+    SQS__QUEUE_URL   = aws_sqs_queue.order.url
+    SQS__REGION_NAME = var.aws_region
+    EVENTS__ENABLED  = "false"
+  } : {}
 }
 
 module "api_gateway" {

@@ -42,6 +42,11 @@ output "ecs_cluster_name" {
   value = aws_ecs_cluster.this.name
 }
 
+output "order_queue_url" {
+  description = "SQS queue that diner orders are placed on."
+  value       = aws_sqs_queue.order.url
+}
+
 output "database_endpoint" {
   value = module.database.address
 }

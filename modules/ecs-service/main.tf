@@ -18,6 +18,11 @@ variable "db_port" { type = number }
 variable "db_name" { type = string }
 variable "db_master_secret_arn" { type = string }
 variable "depends_on_listener_arn" { type = string }
+variable "extra_environment" {
+  type        = map(string)
+  default     = {}
+  description = "Additional plain environment variables for this service's container"
+}
 
 resource "aws_cloudwatch_log_group" "this" {
   name              = "/ecs/${var.name}/${var.service_name}"
@@ -44,11 +49,14 @@ resource "aws_ecs_task_definition" "this" {
       protocol      = "tcp"
     }]
 
-    environment = [
-      { name = "DB_HOST", value = var.db_host },
-      { name = "DB_PORT", value = tostring(var.db_port) },
-      { name = "DB_NAME", value = var.db_name }
-    ]
+    environment = concat(
+      [
+        { name = "DB_HOST", value = var.db_host },
+        { name = "DB_PORT", value = tostring(var.db_port) },
+        { name = "DB_NAME", value = var.db_name }
+      ],
+      [for k, v in var.extra_environment : { name = k, value = v }]
+    )
 
     # RDS stores its managed master credentials as JSON in Secrets Manager.
     # ECS extracts the JSON keys and injects them as environment variables.
