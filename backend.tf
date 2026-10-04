@@ -3,7 +3,7 @@
 #
 terraform {
   backend "s3" {
-    bucket       = "hawkerflow-tf-state-bucket-147010142233-ap-southeast-1-an"
+    bucket       = "hawkerflow-tf-state-971586140094-ap-southeast-1"
     key          = "hawkerflow/dev/terraform.tfstate"
     region       = "ap-southeast-1"
     use_lockfile = true
