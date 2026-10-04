@@ -22,9 +22,25 @@ they are harmless and appear on every plan. If the plan wants to add dozens of
 resources, stop: the backend or the AWS account is wrong.
 
 `terraform apply` only changes infrastructure. It does not build or upload
-code: after changing a service, push a new image to its ECR repository and
-redeploy the ECS service; after changing a site, build it and upload it to its
-S3 bucket (`scripts/deploy-frontend.sh`).
+code. After changing a service or a site, release it with the scripts below.
+They take everything they need (ECR repositories, API address, Cognito IDs,
+buckets) from `terraform output`, so run them after `terraform init`. They
+need Docker, Node, the AWS CLI and jq, and a bash shell (Git Bash on Windows).
+
+```bash
+# A backend service: build the image, push it to ECR, restart it on ECS
+./scripts/release-service.sh order     ../hawkerflow-service-order
+./scripts/release-service.sh hawker    ../hawkerflow-service-hawker
+./scripts/release-service.sh customer  ../hawkerflow-service-customer
+./scripts/release-service.sh analytics ../hawkerflow-service-analytics
+
+# A site: build it against this deployment, upload it, clear the CDN cache
+./scripts/release-frontend.sh customer ../diner-ui
+./scripts/release-frontend.sh hawker   ../hawker-ui
+```
+
+If a change needs both new infrastructure and new code, for example a new
+environment variable, release the code first and then run `terraform apply`.
 
 ## Architecture
 
