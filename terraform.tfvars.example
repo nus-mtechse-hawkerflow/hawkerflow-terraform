@@ -1,47 +1,17 @@
+# Copy to terraform.tfvars (gitignored). These are the values the shared dev
+# deployment runs with.
+
 aws_region   = "ap-southeast-1"
 project_name = "hawkerflow"
 environment  = "dev"
 
-# Rename these keys to match your real services. The key becomes part of the
-# ECR repository, ECS service and task-definition names.
-services = {
-  user = {
-    container_port = 8000
-    cpu            = 256
-    memory         = 512
-    desired_count  = 1
-    route_prefix   = "/users"
-    health_path    = "/health"
-    image_tag      = "latest"
-  }
-  order = {
-    container_port = 8000
-    cpu            = 256
-    memory         = 512
-    desired_count  = 1
-    route_prefix   = "/orders"
-    health_path    = "/health"
-    image_tag      = "latest"
-  }
-  hawker = {
-    container_port = 8000
-    cpu            = 256
-    memory         = 512
-    desired_count  = 1
-    route_prefix   = "/hawkers"
-    health_path    = "/health"
-    image_tag      = "latest"
-  }
-  payment = {
-    container_port = 8000
-    cpu            = 256
-    memory         = 512
-    desired_count  = 1
-    route_prefix   = "/payments"
-    health_path    = "/health"
-    image_tag      = "latest"
-  }
-}
+# services is deliberately not set here. The defaults in variables.tf match the
+# real services: order, hawker, customer and analytics, each on port 8080, routed
+# under /order, /hawker, /customer and /insights. Override it only to change
+# sizing or image tags, and keep those keys, ports and route prefixes.
+
+# Minutes a stall has to accept an order before the order service cancels it
+order_pending_expiry_minutes = 15
 
 # Frontend Angular Applications hosted on S3 + CloudFront
 frontend_apps = {
@@ -65,7 +35,7 @@ cognito_pools = {
 cors_allow_origins = ["*"]
 cors_allow_headers = ["*"]
 
-# Bastion host for local DBeaver / database access (No NAT Gateway needed)
+# Bastion host for DBeaver / database access (No NAT Gateway needed)
 enable_bastion              = true
-bastion_instance_type       = "t4g.nano"        # lowest cost (~$0.0053/hr)
-bastion_allowed_cidr_blocks = ["0.0.0.0/0"]     # restrict to your IP (e.g. ["203.0.113.195/32"]) for tighter security
+bastion_instance_type       = "t4g.nano"    # lowest cost (~$0.0053/hr)
+bastion_allowed_cidr_blocks = ["0.0.0.0/0"] # restrict to your IP (e.g. ["203.0.113.195/32"]) for tighter security

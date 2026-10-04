@@ -2,6 +2,30 @@
 
 This project creates a reusable AWS foundation for four (or more) HTTP microservices.
 
+## Working on the shared dev deployment
+
+The dev environment already exists in AWS account `971586140094`
+(`ap-southeast-1`). To work on it from a fresh clone, do not create anything
+new; connect to its existing state:
+
+```bash
+aws sts get-caller-identity          # must show account 971586140094
+cp backend.tf.example backend.tf
+cp terraform.tfvars.example terraform.tfvars
+terraform init
+terraform plan
+```
+
+A correct setup plans `0 to add, 8 to change, 0 to destroy`. The eight changes
+are the API Gateway routes re-adding an authorizer ID that API Gateway drops;
+they are harmless and appear on every plan. If the plan wants to add dozens of
+resources, stop: the backend or the AWS account is wrong.
+
+`terraform apply` only changes infrastructure. It does not build or upload
+code: after changing a service, push a new image to its ECR repository and
+redeploy the ECS service; after changing a site, build it and upload it to its
+S3 bucket (`scripts/deploy-frontend.sh`).
+
 ## Architecture
 
 ```text

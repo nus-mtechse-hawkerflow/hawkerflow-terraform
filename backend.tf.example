@@ -1,12 +1,18 @@
-# Add this AFTER you create an S3 bucket for Terraform state.
-# Do not use this file as-is. Rename it to backend.tf and replace the values.
+# Copy to backend.tf (gitignored), then run: terraform init
 #
-# terraform {
-#   backend "s3" {
-#     bucket       = "YOUR-TERRAFORM-STATE-BUCKET"
-#     key          = "hawkerflow/dev/terraform.tfstate"
-#     region       = "ap-southeast-1"
-#     use_lockfile = true
-#     encrypt      = true
-#   }
-# }
+# This is the state of the shared dev deployment, in AWS account 971586140094.
+# Everyone working on that deployment must use this same bucket and key, with
+# credentials for that account. Do not run "terraform apply" from a second
+# state against the same account: it would try to create everything again.
+#
+# For a separate deployment in another account, create your own private,
+# versioned S3 bucket and put its name here instead.
+terraform {
+  backend "s3" {
+    bucket       = "hawkerflow-tf-state-971586140094-ap-southeast-1"
+    key          = "hawkerflow/dev/terraform.tfstate"
+    region       = "ap-southeast-1"
+    use_lockfile = true
+    encrypt      = true
+  }
+}
