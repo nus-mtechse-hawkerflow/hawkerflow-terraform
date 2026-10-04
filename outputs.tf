@@ -47,6 +47,16 @@ output "order_queue_url" {
   value       = aws_sqs_queue.order.url
 }
 
+output "order_events_queue_url" {
+  description = "SQS queue holding a copy of every order event for a day."
+  value       = aws_sqs_queue.order_events.url
+}
+
+output "order_status_topic_arn" {
+  description = "SNS topic the order service publishes order events to."
+  value       = aws_sns_topic.order_status.arn
+}
+
 output "database_endpoint" {
   value = module.database.address
 }

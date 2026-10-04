@@ -109,6 +109,43 @@ resource "aws_sqs_queue" "order" {
   })
 }
 
+# -------------------------------------------------------------
+# Order events: the order service announces every step of an order
+# (placed, accepted, preparing, ready, completed, cancelled) on an SNS
+# topic. A queue subscribed to the topic keeps a copy of each event for
+# a day, so an order's journey can be read in the SQS console.
+# -------------------------------------------------------------
+resource "aws_sns_topic" "order_status" {
+  name = "${local.name}-order-status"
+}
+
+resource "aws_sqs_queue" "order_events" {
+  name                      = "${local.name}-order-events"
+  message_retention_seconds = 86400
+}
+
+resource "aws_sqs_queue_policy" "order_events" {
+  queue_url = aws_sqs_queue.order_events.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "sns.amazonaws.com" }
+      Action    = "sqs:SendMessage"
+      Resource  = aws_sqs_queue.order_events.arn
+      Condition = { ArnEquals = { "aws:SourceArn" = aws_sns_topic.order_status.arn } }
+    }]
+  })
+}
+
+resource "aws_sns_topic_subscription" "order_events" {
+  topic_arn            = aws_sns_topic.order_status.arn
+  protocol             = "sqs"
+  endpoint             = aws_sqs_queue.order_events.arn
+  raw_message_delivery = true
+}
+
 resource "aws_iam_role_policy" "order_queue_access" {
   count = local.has_order_service ? 1 : 0
   name  = "${local.name}-order-queue-access"
@@ -126,6 +163,10 @@ resource "aws_iam_role_policy" "order_queue_access" {
         "sqs:GetQueueAttributes"
       ]
       Resource = [aws_sqs_queue.order.arn]
+      }, {
+      Effect   = "Allow"
+      Action   = ["sns:Publish"]
+      Resource = [aws_sns_topic.order_status.arn]
     }]
   })
 }
@@ -188,13 +229,17 @@ module "ecs_service" {
   depends_on_listener_arn = module.alb.listener_arn
 
   # The order service reads these over its config.yml, which ships with
-  # LocalStack values. Nothing subscribes to order events on AWS, so
-  # publishing them is switched off.
+  # the queue and event publishing switched off.
   extra_environment = each.key == local.order_queue_service ? {
-    SQS__ENABLED     = "true"
-    SQS__QUEUE_URL   = aws_sqs_queue.order.url
-    SQS__REGION_NAME = var.aws_region
-    EVENTS__ENABLED  = "false"
+    SQS__ENABLED        = "true"
+    SQS__QUEUE_URL      = aws_sqs_queue.order.url
+    SQS__REGION_NAME    = var.aws_region
+    EVENTS__ENABLED     = "true"
+    EVENTS__TOPIC_ARN   = aws_sns_topic.order_status.arn
+    EVENTS__REGION_NAME = var.aws_region
+    # Cancel orders no stall accepted in time; complete uncollected ready orders at day end
+    EXPIRY__ENABLED         = "true"
+    EXPIRY__PENDING_MINUTES = tostring(var.order_pending_expiry_minutes)
   } : {}
 }
 

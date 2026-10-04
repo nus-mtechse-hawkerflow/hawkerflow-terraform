@@ -79,6 +79,12 @@ variable "services" {
   }
 }
 
+variable "order_pending_expiry_minutes" {
+  description = "Minutes a stall has to accept an order before the order service cancels it."
+  type        = number
+  default     = 15
+}
+
 variable "db_name" {
   type    = string
   default = "hawkerflow"
