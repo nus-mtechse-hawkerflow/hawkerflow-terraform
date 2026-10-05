@@ -141,9 +141,9 @@
 <path d="M1515 952 L1490 952" fill="none" stroke="#6d28d9" stroke-width="2.2" marker-end="url(#p)"/>
 <rect x="1519" y="837" width="73.9" height="17" rx="3" fill="#ffffff" opacity="0.92"/>
 <text x="1524" y="850" text-anchor="start" font-size="12.5" font-weight="600" fill="#6d28d9">SQL :5432</text>
-<path d="M1650 248 L1490 248" fill="none" stroke="#1d4ed8" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#b)"/>
+<path d="M1490 248 L1650 248" fill="none" stroke="#1d4ed8" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#b)"/>
 <rect x="1518.85" y="227" width="102.3" height="17" rx="3" fill="#ffffff" opacity="0.92"/>
-<text x="1570" y="240" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1d4ed8">receive</text>
+<text x="1570" y="240" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1d4ed8">poll</text>
 <path d="M1490 282 L1622 282 L1622 412 L1650 412" fill="none" stroke="#1d4ed8" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#b)"/>
 <rect x="1542.15" y="287" width="59.699999999999996" height="17" rx="3" fill="#ffffff" opacity="0.92"/>
 <text x="1572" y="300" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1d4ed8">publish</text>
