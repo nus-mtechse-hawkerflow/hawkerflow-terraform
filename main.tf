@@ -88,8 +88,9 @@ resource "aws_iam_role_policy" "ecs_read_db_secret" {
 }
 
 # -------------------------------------------------------------
-# Order queue: diners' orders are queued here and created by the
-# order service's background worker.
+# Order queue: API Gateway puts diners' orders straight on this queue,
+# and the order service's background worker creates them. Orders are
+# therefore accepted even while the order service is down or restarting.
 # -------------------------------------------------------------
 locals {
   order_queue_service = "order"
@@ -110,6 +111,77 @@ resource "aws_sqs_queue" "order" {
     deadLetterTargetArn = aws_sqs_queue.order_dlq.arn
     maxReceiveCount     = 5
   })
+}
+
+# Nothing checks an order's shape before it is queued, so an order the worker
+# cannot create ends up here. Anything in this queue needs a person to look.
+resource "aws_cloudwatch_metric_alarm" "order_dlq_not_empty" {
+  alarm_name          = "${local.name}-order-queue-dlq-not-empty"
+  alarm_description   = "An order failed five times and was set aside. Read it in SQS: ${aws_sqs_queue.order_dlq.name}"
+  namespace           = "AWS/SQS"
+  metric_name         = "ApproximateNumberOfMessagesVisible"
+  dimensions          = { QueueName = aws_sqs_queue.order_dlq.name }
+  statistic           = "Maximum"
+  period              = 60
+  evaluation_periods  = 1
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = 0
+  treat_missing_data  = "notBreaching"
+}
+
+data "aws_iam_policy_document" "apigw_assume" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["apigateway.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "apigw_order_queue" {
+  name               = "${local.name}-apigw-order-queue"
+  assume_role_policy = data.aws_iam_policy_document.apigw_assume.json
+}
+
+resource "aws_iam_role_policy" "apigw_order_queue" {
+  name = "${local.name}-apigw-order-queue"
+  role = aws_iam_role.apigw_order_queue.name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["sqs:SendMessage"]
+      Resource = [aws_sqs_queue.order.arn]
+    }]
+  })
+}
+
+resource "aws_apigatewayv2_integration" "order_queue" {
+  api_id                 = module.api_gateway.api_id
+  integration_type       = "AWS_PROXY"
+  integration_subtype    = "SQS-SendMessage"
+  credentials_arn        = aws_iam_role.apigw_order_queue.arn
+  payload_format_version = "1.0"
+
+  request_parameters = {
+    QueueUrl    = aws_sqs_queue.order.url
+    MessageBody = "$request.body"
+  }
+}
+
+# More specific than the order service's "ANY /order/{proxy+}" route, so this
+# one request goes to the queue and everything else still reaches the service.
+# The diner site posts the order as plain text so the browser sends no CORS
+# preflight: an OPTIONS request would fall through to the order service and
+# fail while it is down. (A route with no integration does not catch it.)
+resource "aws_apigatewayv2_route" "order_queue" {
+  count = local.has_order_service ? 1 : 0
+
+  api_id    = module.api_gateway.api_id
+  route_key = "POST ${var.services[local.order_queue_service].route_prefix}/v1/order/orders/queue"
+  target    = "integrations/${aws_apigatewayv2_integration.order_queue.id}"
 }
 
 # -------------------------------------------------------------
@@ -159,7 +231,6 @@ resource "aws_iam_role_policy" "order_queue_access" {
     Statement = [{
       Effect = "Allow"
       Action = [
-        "sqs:SendMessage",
         "sqs:ReceiveMessage",
         "sqs:DeleteMessage",
         "sqs:ChangeMessageVisibility",
