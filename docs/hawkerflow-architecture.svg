@@ -103,8 +103,9 @@
 <text x="1795" y="760" text-anchor="middle" font-size="19" font-weight="700" fill="#1f2937">Secrets Manager</text>
 <text x="1795" y="778" text-anchor="middle" font-size="13.5" fill="#4b5563">RDS master credentials</text>
 <rect x="1650" y="880" width="290" height="84" rx="10" fill="#fdf0d5" stroke="#d97706" stroke-width="2"/>
-<text x="1795" y="920" text-anchor="middle" font-size="19" font-weight="700" fill="#1f2937">CloudWatch Logs</text>
-<text x="1795" y="938" text-anchor="middle" font-size="13.5" fill="#4b5563">One log group per service</text>
+<text x="1795" y="913" text-anchor="middle" font-size="19" font-weight="700" fill="#1f2937">CloudWatch</text>
+<text x="1795" y="931" text-anchor="middle" font-size="13.5" fill="#4b5563">One log group per service</text>
+<text x="1795" y="949" text-anchor="middle" font-size="13.5" fill="#4b5563">Alarm on the dead-letter queue</text>
 <path d="M312 238 L402 238" fill="none" stroke="#64748b" stroke-width="2.2" marker-end="url(#a)"/>
 <rect x="334.25" y="213" width="45.5" height="17" rx="3" fill="#ffffff" opacity="0.92"/>
 <text x="357" y="226" text-anchor="middle" font-size="12.5" font-weight="600" fill="#64748b">HTTPS</text>
