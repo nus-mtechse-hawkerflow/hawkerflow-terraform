@@ -22,7 +22,7 @@
 <rect x="60" y="560" width="240" height="96" rx="10" fill="#eef0f4" stroke="#6b7280" stroke-width="2"/>
 <text x="180" y="597" text-anchor="middle" font-size="19" font-weight="700" fill="#1f2937">GitHub</text>
 <text x="180" y="615" text-anchor="middle" font-size="13.5" fill="#4b5563">7 repositories</text>
-<text x="180" y="633" text-anchor="middle" font-size="13.5" fill="#4b5563">CI: lint, tests, secret scan</text>
+<text x="180" y="633" text-anchor="middle" font-size="13.5" fill="#4b5563">CI on 3 service repos</text>
 <rect x="60" y="790" width="240" height="112" rx="10" fill="#eef0f4" stroke="#6b7280" stroke-width="2"/>
 <text x="180" y="826" text-anchor="middle" font-size="19" font-weight="700" fill="#1f2937">Developers and DBA</text>
 <text x="180" y="844" text-anchor="middle" font-size="13.5" fill="#4b5563">Terraform, Docker, AWS CLI</text>
@@ -62,10 +62,11 @@
 <text x="1070" y="686" text-anchor="middle" font-size="19" font-weight="700" fill="#1f2937">Internal ALB</text>
 <text x="1070" y="704" text-anchor="middle" font-size="13.5" fill="#4b5563">HTTP :80, routes by path</text>
 <rect x="1230" y="220" width="260" height="112" rx="10" fill="#dcf5e7" stroke="#15803d" stroke-width="2"/>
-<text x="1360" y="256" text-anchor="middle" font-size="19" font-weight="700" fill="#1f2937">Order service</text>
-<text x="1360" y="274" text-anchor="middle" font-size="13.5" fill="#4b5563">/order  ·  Fargate :8080</text>
-<text x="1360" y="292" text-anchor="middle" font-size="13.5" fill="#4b5563">Queue worker: creates orders</text>
-<text x="1360" y="310" text-anchor="middle" font-size="13.5" fill="#4b5563">Expiry worker: 15 min rule</text>
+<text x="1360" y="250" text-anchor="middle" font-size="19" font-weight="700" fill="#1f2937">Order service</text>
+<text x="1360" y="268" text-anchor="middle" font-size="13.5" fill="#4b5563">/order  ·  Fargate :8080</text>
+<text x="1360" y="286" text-anchor="middle" font-size="13.5" fill="#4b5563">Queue worker: creates orders</text>
+<text x="1360" y="304" text-anchor="middle" font-size="13.5" fill="#4b5563">Expiry: cancels pending after 15 min;</text>
+<text x="1360" y="322" text-anchor="middle" font-size="13.5" fill="#4b5563">completes prior-day READY orders</text>
 <rect x="1230" y="420" width="260" height="84" rx="10" fill="#dcf5e7" stroke="#15803d" stroke-width="2"/>
 <text x="1360" y="460" text-anchor="middle" font-size="19" font-weight="700" fill="#1f2937">Hawker service</text>
 <text x="1360" y="478" text-anchor="middle" font-size="13.5" fill="#4b5563">/hawker  ·  Fargate :8080</text>
@@ -78,7 +79,7 @@
 <text x="1360" y="773" text-anchor="middle" font-size="13.5" fill="#4b5563">Reads the order tables</text>
 <rect x="1230" y="900" width="260" height="104" rx="10" fill="#e9e3fb" stroke="#6d28d9" stroke-width="2"/>
 <text x="1360" y="932" text-anchor="middle" font-size="19" font-weight="700" fill="#1f2937">RDS PostgreSQL</text>
-<text x="1360" y="950" text-anchor="middle" font-size="13.5" fill="#4b5563">Database subnets, :5432</text>
+<text x="1360" y="950" text-anchor="middle" font-size="13.5" fill="#4b5563">Database subnets, :5432, Single-AZ</text>
 <text x="1360" y="968" text-anchor="middle" font-size="13.5" fill="#4b5563">gp3, encrypted, one database</text>
 <text x="1360" y="986" text-anchor="middle" font-size="13.5" fill="#4b5563">shared by all four services</text>
 <rect x="720" y="1030" width="240" height="96" rx="10" fill="#dcf5e7" stroke="#15803d" stroke-width="2"/>
@@ -90,8 +91,9 @@
 <text x="1795" y="255" text-anchor="middle" font-size="13.5" fill="#4b5563">New orders wait here</text>
 <text x="1795" y="273" text-anchor="middle" font-size="13.5" fill="#4b5563">+ dead-letter queue (5 attempts)</text>
 <rect x="1650" y="370" width="290" height="84" rx="10" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
-<text x="1795" y="410" text-anchor="middle" font-size="19" font-weight="700" fill="#1f2937">SNS order-status topic</text>
-<text x="1795" y="428" text-anchor="middle" font-size="13.5" fill="#4b5563">One event per order step</text>
+<text x="1795" y="403" text-anchor="middle" font-size="19" font-weight="700" fill="#1f2937">SNS order-status topic</text>
+<text x="1795" y="421" text-anchor="middle" font-size="13.5" fill="#4b5563">Placement and explicit stall-status</text>
+<text x="1795" y="439" text-anchor="middle" font-size="13.5" fill="#4b5563">events (best effort)</text>
 <rect x="1650" y="530" width="290" height="96" rx="10" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
 <text x="1795" y="567" text-anchor="middle" font-size="19" font-weight="700" fill="#1f2937">SQS order-events queue</text>
 <text x="1795" y="585" text-anchor="middle" font-size="13.5" fill="#4b5563">Copy of every event,</text>
@@ -180,5 +182,5 @@
 <text x="112" y="1303" font-size="14.5" fill="#4b5563">Request or data flow</text>
 <path d="M300 1298 L360 1298" stroke="#64748b" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#a)"/>
 <text x="372" y="1303" font-size="14.5" fill="#4b5563">Sign-in, private AWS access through a VPC endpoint, or admin access</text>
-<text x="40" y="1334" font-size="14" fill="#6b7280">The four services pull their images from ECR, write logs to CloudWatch and read the database password from Secrets Manager through the VPC endpoints; those links are not drawn. The release scripts also upload the two sites to the S3 site buckets.</text>
+<text x="40" y="1334" font-size="14" fill="#6b7280">The four services pull their images from ECR and write logs to CloudWatch through the VPC endpoints; ECS injects the database credentials from Secrets Manager at task start. Those links are not drawn. The release scripts also upload the two sites to the S3 site buckets.</text>
 </svg>
