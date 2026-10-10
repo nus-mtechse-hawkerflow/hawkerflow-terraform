@@ -60,10 +60,10 @@ case "$APP_NAME" in
   hawker)
     DIST_DIR="dist/hawkerflow-ui/browser"
     export COGNITO_USER_POOL_ID=$(out '.cognito_user_pool_ids.value.hawker')
-    export COGNITO_CLIENT_ID=$(out '.cognito_client_ids.value.hawker')
+    export COGNITO_USER_POOL_CLIENT_ID=$(out '.cognito_client_ids.value.hawker')
     export HAWKER_API_URL="$API_URL/hawker"
     export ORDER_API_URL="$API_URL/order"
-    export ANALYTICS_API_URL="$API_URL/insights"
+    export ANALYTICS_API_URL="$API_URL/analytics"
     ;;
   *)
     echo "Error: app must be 'customer' or 'hawker', not '$APP_NAME'."
@@ -71,7 +71,7 @@ case "$APP_NAME" in
     ;;
 esac
 
-if [[ -z "$COGNITO_USER_POOL_ID" || -z "$COGNITO_CLIENT_ID" ]]; then
+if [[ -z "$COGNITO_USER_POOL_ID" || -z "$COGNITO_USER_POOL_CLIENT_ID" ]]; then
   echo "Error: no Cognito pool or client for '$APP_NAME' in the Terraform outputs."
   exit 1
 fi
