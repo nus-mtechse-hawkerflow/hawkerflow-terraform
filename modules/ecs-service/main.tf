@@ -103,3 +103,5 @@ resource "aws_ecs_service" "this" {
   # otherwise needed by this resource.
   depends_on = [aws_ecs_task_definition.this]
 }
+
+output "service_name" { value = aws_ecs_service.this.name }

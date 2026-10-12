@@ -77,3 +77,5 @@ resource "aws_lb_listener_rule" "service" {
 
 output "listener_arn" { value = aws_lb_listener.http.arn }
 output "target_group_arns" { value = { for k, v in aws_lb_target_group.service : k => v.arn } }
+output "arn_suffix" { value = aws_lb.this.arn_suffix }
+output "target_group_arn_suffixes" { value = { for k, v in aws_lb_target_group.service : k => v.arn_suffix } }
