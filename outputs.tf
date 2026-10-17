@@ -109,3 +109,7 @@ output "bastion_ssh_tunnel_command" {
 }
 
 
+output "loadtest_metrics_role_arn" {
+  description = "IAM role for the hawkerflow-qa load-test workflow (set as its AWS_METRICS_ROLE secret)."
+  value       = aws_iam_role.loadtest_metrics.arn
+}

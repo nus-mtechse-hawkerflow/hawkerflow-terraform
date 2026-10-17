@@ -201,3 +201,41 @@ variable "bastion_public_key" {
   type        = string
   default     = null
 }
+variable "autoscaling_limits" {
+  description = "Min and max tasks per ECS service; a service not listed is not auto-scaled. Each order, hawker or customer task can open up to 15 database connections (SQLAlchemy pool_size 5 + max_overflow 10) and an analytics task up to 7, so keep the maxima inside the RDS instance's connection limit (roughly 80-110 on db.t4g.micro)."
+  type = map(object({
+    min = number
+    max = number
+  }))
+  # At these maxima: 15 x (3 + 2 + 2) + 7 x 1 = 112 connections
+  default = {
+    order     = { min = 1, max = 3 }
+    hawker    = { min = 1, max = 2 }
+    customer  = { min = 1, max = 2 }
+    analytics = { min = 1, max = 1 }
+  }
+}
+
+variable "autoscaling_cpu_target_percent" {
+  description = "Average CPU utilisation each service is scaled to hold."
+  type        = number
+  default     = 60
+}
+
+variable "autoscaling_hawker_requests_per_task" {
+  description = "ALB requests per hawker task per minute before another task is added. Set from a step load test: about half the rate where p95 latency starts to rise."
+  type        = number
+  default     = 1500
+}
+
+variable "autoscaling_order_backlog_per_task" {
+  description = "Queued orders one Order task may hold: acceptable queue wait (s) / average seconds per order."
+  type        = number
+  default     = 50
+}
+
+variable "loadtest_github_subject_prefix" {
+  description = "OIDC subject prefix of the GitHub repository whose Actions runs may assume the load-test metrics role. The org's repos use GitHub's immutable subject format, repo:<owner>@<owner-id>/<repo>@<repo-id>; read a repo's prefix with: gh api repos/<owner>/<repo>/actions/oidc/customization/sub"
+  type        = string
+  default     = "repo:nus-mtechse-hawkerflow@322320064/hawkerflow-qa@1415835750"
+}
