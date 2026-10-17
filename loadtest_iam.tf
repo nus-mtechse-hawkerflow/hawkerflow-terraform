@@ -28,7 +28,7 @@ data "aws_iam_policy_document" "loadtest_metrics_assume" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.loadtest_github_repository}:*"]
+      values   = ["${var.loadtest_github_subject_prefix}:*"]
     }
   }
 }

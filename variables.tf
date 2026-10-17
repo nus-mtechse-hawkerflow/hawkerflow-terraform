@@ -234,8 +234,8 @@ variable "autoscaling_order_backlog_per_task" {
   default     = 50
 }
 
-variable "loadtest_github_repository" {
-  description = "GitHub repository (owner/name) whose Actions runs may assume the load-test metrics role."
+variable "loadtest_github_subject_prefix" {
+  description = "OIDC subject prefix of the GitHub repository whose Actions runs may assume the load-test metrics role. The org's repos use GitHub's immutable subject format, repo:<owner>@<owner-id>/<repo>@<repo-id>; read a repo's prefix with: gh api repos/<owner>/<repo>/actions/oidc/customization/sub"
   type        = string
-  default     = "nus-mtechse-hawkerflow/hawkerflow-qa"
+  default     = "repo:nus-mtechse-hawkerflow@322320064/hawkerflow-qa@1415835750"
 }
