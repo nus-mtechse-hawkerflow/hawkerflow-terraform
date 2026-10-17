@@ -87,6 +87,12 @@ resource "aws_ecs_service" "this" {
   deployment_maximum_percent         = 200
   health_check_grace_period_seconds  = 60
 
+  # Fail fast and roll back when a new version's tasks keep failing
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
+
   network_configuration {
     subnets          = var.private_subnet_ids
     security_groups  = [var.security_group_id]
@@ -97,6 +103,13 @@ resource "aws_ecs_service" "this" {
     target_group_arn = var.target_group_arn
     container_name   = var.service_name
     container_port   = var.container_port
+  }
+
+  # The CI/CD pipeline deploys new task-definition revisions (SHA-tagged images).
+  # Terraform keeps managing desired_count (pause/resume), but leaves the
+  # running revision alone so an apply does not roll services back to :latest.
+  lifecycle {
+    ignore_changes = [task_definition]
   }
 
   # Forces Terraform to wait until the listener exists. The ARN itself is not
