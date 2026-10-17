@@ -239,3 +239,15 @@ variable "loadtest_github_subject_prefix" {
   type        = string
   default     = "repo:nus-mtechse-hawkerflow@322320064/hawkerflow-qa@1415835750"
 }
+
+variable "api_throttling_rate_limit" {
+  description = "API Gateway: sustained requests per second per route before requests are rejected with 429. Was 50, which is below the step load test's 100 and 200 req/s steps (the busiest route, browse, carries 70% of the load). Set it just above the highest load the services are shown to handle."
+  type        = number
+  default     = 500
+}
+
+variable "api_throttling_burst_limit" {
+  description = "API Gateway: requests per route that can arrive at once (token bucket size) before throttling starts. Was 100."
+  type        = number
+  default     = 1000
+}

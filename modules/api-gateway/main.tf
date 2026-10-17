@@ -10,6 +10,14 @@ variable "cors_allow_origins" {
   description = "Origins allowed to make cross-origin requests to API Gateway"
   default     = ["*"]
 }
+variable "throttling_rate_limit" {
+  type        = number
+  description = "Sustained requests per second allowed per route before API Gateway returns 429"
+}
+variable "throttling_burst_limit" {
+  type        = number
+  description = "Requests per route that may arrive at once (token bucket size) before throttling"
+}
 variable "cors_allow_headers" {
   type        = list(string)
   description = "Allowed headers for API Gateway CORS"
@@ -86,8 +94,8 @@ resource "aws_apigatewayv2_stage" "default" {
   auto_deploy = true
 
   default_route_settings {
-    throttling_burst_limit = 100
-    throttling_rate_limit  = 50
+    throttling_burst_limit = var.throttling_burst_limit
+    throttling_rate_limit  = var.throttling_rate_limit
   }
 }
 
