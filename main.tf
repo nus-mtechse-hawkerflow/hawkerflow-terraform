@@ -329,6 +329,9 @@ module "api_gateway" {
   route_prefixes     = { for k, v in var.services : k => v.route_prefix }
   cors_allow_origins = var.cors_allow_origins
   cors_allow_headers = var.cors_allow_headers
+
+  throttling_rate_limit  = var.api_throttling_rate_limit
+  throttling_burst_limit = var.api_throttling_burst_limit
 }
 
 module "spa_hosting" {
