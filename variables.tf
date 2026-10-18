@@ -207,10 +207,13 @@ variable "autoscaling_limits" {
     min = number
     max = number
   }))
-  # At these maxima: 15 x (3 + 2 + 2) + 7 x 1 = 112 connections
+  # Theoretical worst case at these maxima: 15 x (5 + 3 + 2) + 7 x 1 = 157 connections.
+  # In practice pools stay small: load test run 0 (17 Oct) used 8 connections across
+  # 6 tasks. Watch RDS DatabaseConnections under load; shrink the per-task pools
+  # (e.g. pool_size 2, max_overflow 3) before raising these further.
   default = {
-    order     = { min = 1, max = 3 }
-    hawker    = { min = 1, max = 2 }
+    order     = { min = 1, max = 5 }
+    hawker    = { min = 1, max = 3 }
     customer  = { min = 1, max = 2 }
     analytics = { min = 1, max = 1 }
   }
