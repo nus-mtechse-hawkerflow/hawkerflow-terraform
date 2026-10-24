@@ -39,7 +39,7 @@ variable "services" {
       container_port = 8080
       cpu            = 256
       memory         = 512
-      desired_count  = 1
+      desired_count  = 2
       route_prefix   = "/order"
       health_path    = "/health"
       image_tag      = "latest"
@@ -49,7 +49,7 @@ variable "services" {
       container_port = 8080
       cpu            = 256
       memory         = 512
-      desired_count  = 1
+      desired_count  = 2
       route_prefix   = "/hawker"
       health_path    = "/health"
       image_tag      = "latest"
@@ -59,7 +59,7 @@ variable "services" {
       container_port = 8080
       cpu            = 256
       memory         = 512
-      desired_count  = 1
+      desired_count  = 2
       route_prefix   = "/customer"
       health_path    = "/health"
       image_tag      = "latest"
@@ -69,9 +69,9 @@ variable "services" {
       container_port = 8080
       cpu            = 256
       memory         = 512
-      desired_count  = 1
+      desired_count  = 2
       # Not "/analytics": ad and tracker blockers refuse requests to that path
-      route_prefix = "/insights"
+      route_prefix = "/analytics"
       health_path  = "/health"
       image_tag    = "latest"
       priority     = 40
@@ -212,10 +212,10 @@ variable "autoscaling_limits" {
   # 6 tasks. Watch RDS DatabaseConnections under load; shrink the per-task pools
   # (e.g. pool_size 2, max_overflow 3) before raising these further.
   default = {
-    order     = { min = 1, max = 5 }
-    hawker    = { min = 1, max = 3 }
-    customer  = { min = 1, max = 2 }
-    analytics = { min = 1, max = 1 }
+    order     = { min = 2, max = 5 }
+    hawker    = { min = 2, max = 5 }
+    customer  = { min = 2, max = 5 }
+    analytics = { min = 2, max = 5 }
   }
 }
 
